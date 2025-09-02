@@ -1,15 +1,5 @@
-import { StyleSheet, Text, View } from "react-native"
-import Icon from '@react-native-vector-icons/ionicons';
+import { ActivityIndicator } from "react-native"
 
 export const Loading = () => {
-    return <View style={styles.loading}><Text>loading...</Text> </View>
+    return <ActivityIndicator style={{ marginTop: 20 }} size="large" />;
 }
-
-const styles = StyleSheet.create({
-      loading: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-  },}
-);

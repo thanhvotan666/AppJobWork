@@ -31,14 +31,13 @@ import { showError, showSalary } from '../../config/func';
 
 export default function HomeScreen() {
   const navigation = useNavigation<NavigationMainTabsProp>();
-  // const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [newJobs, setNewJobs] = useState([]);
   const [recommendedJobs, setRecommendedJobs] = useState([]);
 
   useEffect(() => {
     fetchNewJobs();
     fetchRecommendedJobs();
-    // setLoading(false);
   }, []);
 
   const fetchNewJobs = async () => {
@@ -46,6 +45,7 @@ export default function HomeScreen() {
       const response = await axiosClient.get('/jobs');
       const data = response.data;
       setNewJobs(data);
+      setLoading(false);
     } catch (error) {
       showError(error);
     }
@@ -56,18 +56,19 @@ export default function HomeScreen() {
       const response = await axiosClient.get('/jobs');
       const data = response.data;
       setRecommendedJobs(data);
+      setLoading(false);
     } catch (error) {
       showError(error);
     }
   };
 
-  //if (loading) return <Loading/>
+  if (loading) return <Loading/>
 
   const SectionNewJobs = (data: any) => {
     return (
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Việc làm mới nhất</Text>
-        {data &&
+        {data.length > 0 &&
           data.forEach((job: any) => {
             ViewNewJob(job);
           })}
@@ -101,7 +102,8 @@ export default function HomeScreen() {
           <Text style={styles.jobTitle}>{data.name}</Text>
           
           <Text style={styles.jobDetail}>
-            {data.professions.map((job_profession: any, index: number) => {
+            {data.professions > 0 &&
+            data.professions.map((job_profession: any, index: number) => {
               if (index === 0) {
                 return job_profession.profession.name;
               } else {
@@ -110,7 +112,8 @@ export default function HomeScreen() {
             })}
           </Text>
           <Text style={styles.jobDetail}>
-          {data.skills.map((skill: any, index: number) => {
+          {data.skills > 0 &&
+          data.skills.map((skill: any, index: number) => {
             if (index === 0) {
               return skill.name;
             } else {
@@ -140,10 +143,10 @@ export default function HomeScreen() {
       <Text style={styles.header}>Trang chủ</Text>
 
       {/* Việc làm đề xuất */}
-      {recommendedJobs && SectionRecommendedJobs(recommendedJobs)}
+      {SectionRecommendedJobs(recommendedJobs)}
 
       {/* Việc làm mới nhất*/}
-      {newJobs && SectionNewJobs(newJobs)}
+      {SectionNewJobs(newJobs)}
 
     </ScrollView>
   );

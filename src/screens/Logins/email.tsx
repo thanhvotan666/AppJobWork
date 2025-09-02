@@ -1,16 +1,27 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import axiosClient from "../../config/axiosClient";
 import { showError, toastSuccess } from "../../config/func";
-import * as Keychain from 'react-native-keychain';
 import { storage } from "../../config/storage";
+import { useUser } from "../../context/UserContext";
+import axios from "axios";
 
-
-export default function LoginWithEmailScreen({ clickMethod } : any) {
+export default function LoginWithEmailScreen({ clickMethod }: any) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  
+  const [submitting, setSubmitting] = useState(false);
+
+  const { setUser, loading } = useUser();
+
+  if (loading) return <ActivityIndicator size="large" />;
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -19,15 +30,30 @@ export default function LoginWithEmailScreen({ clickMethod } : any) {
     }
 
     try {
-      setLoading(true);
-      const res = await axiosClient.post("/auth/login", { email, password });
-      await storage.set('token', res.data.token);
+      setSubmitting(true);
       
+      // 1. Gọi API login
+      const res = await axiosClient.post("login", { email, password });
+
+      // 2. Lưu token vào storage
+      await storage.set("token", res.data.token);
+
+      // 3. Gọi API /me để lấy user
+      const me = await axios.get(`${axiosClient.defaults.baseURL}/me`, {
+        headers: { Authorization: `Bearer ${res.data.token}` },
+      });
+
+      // 4. Lưu user vào Context
+      setUser(me.data);
+
+      // // 5. Hiển thị thông báo
+      toastSuccess("Đăng nhập thành công");
+
     } catch (err: any) {
       console.log(err);
       showError(err);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -58,11 +84,13 @@ export default function LoginWithEmailScreen({ clickMethod } : any) {
       />
 
       <TouchableOpacity
-        style={[styles.button, loading && { backgroundColor: "#999" }]}
+        style={[styles.button, submitting && { backgroundColor: "#999" }]}
         onPress={handleLogin}
-        disabled={loading}
+        disabled={submitting}
       >
-        <Text style={styles.buttonText}>{loading ? "Đang xử lý..." : "Đăng nhập"}</Text>
+        <Text style={styles.buttonText}>
+          {submitting ? "Đang xử lý..." : "Đăng nhập"}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -101,14 +129,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   backButton: {
-  position: "absolute",
-  top: 40,
-  left: 20,
-  padding: 10,
-  zIndex: 10,
-},
-backButtonText: {
-  fontSize: 20,
-  color: "#007AFF",
-},
+    position: "absolute",
+    top: 40,
+    left: 20,
+    padding: 10,
+    zIndex: 10,
+  },
+  backButtonText: {
+    fontSize: 20,
+    color: "#007AFF",
+  },
 });

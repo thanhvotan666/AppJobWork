@@ -13,6 +13,7 @@ import UtilityScreen from './screens/main-screens/UtilityScreen';
 import ChatScreen from './screens/main-screens/ChatScreen';
 import MenuScreen from './screens/main-screens/MenuScreen';
 import JobScreen from './screens/JobScreen';
+import { AppliedJobsScreen } from './screens/AppliedJobsScreen';
 export type RootStackParamList = {
   MainTabs: undefined;
   'Tìm kiếm': undefined;
@@ -43,7 +44,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Tìm kiếm" component={SearchScreen} />
         <Stack.Screen name="Công việc" component={JobScreen} />
         <Stack.Screen name="Việc đã lưu lại" component={JobScreen} />
-        <Stack.Screen name="Việc đã ứng tuyển" component={JobScreen} />
+        <Stack.Screen name="Việc đã ứng tuyển" component={AppliedJobsScreen} />
         
       </Stack.Navigator>
 

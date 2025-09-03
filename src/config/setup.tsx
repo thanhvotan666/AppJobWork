@@ -5,6 +5,6 @@ export type NavigationMainTabsProp = NativeStackNavigationProp<RootStackParamLis
 
 export const baseURL = 'http://10.0.2.2:8000/'
 
-export const baseUrlApi = `${baseURL}api/android`;
+export const baseUrlApi = `${baseURL}api/`;
 
-export const asset = (image: string) => `${baseURL}/${image}`
+export const asset = (image: string) => `${baseURL}${image}`

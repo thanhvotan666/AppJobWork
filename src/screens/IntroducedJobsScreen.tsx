@@ -12,7 +12,7 @@ import Icon from '@react-native-vector-icons/ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { showError, showSalary } from '../config/func';
 import {useEffect, useState} from 'react';
-import axiosClient from '../config/axiosClient';
+import {axiosClient}from '../config/axiosClient';
 
 export const IntroducedJobsScreen = () => {
   const navigation = useNavigation<NavigationMainTabsProp>();
@@ -92,6 +92,7 @@ export const IntroducedJobsScreen = () => {
               style={styles.jobCard}
               onPress={() => navigation.navigate('Công việc', {id: job.id})}>
               <Text style={styles.jobTitle}>{job.name}</Text>
+              <Text style={styles.jobDetail}>{job.employer.name}</Text>
               <Text style={styles.jobDetail}>💰 {showSalary(job)}</Text>
             </TouchableOpacity>
           ))

@@ -1,159 +1,152 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from "react-native";
-import { Loading } from "../../components/loading";
-import { ProfileScreenMethod } from "../Logins/method";
-import { useUser } from "../../context/UserContext";
-import axiosClient from "../../config/axiosClient";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import {axiosClient} from "../../config/axiosClient";
+import { showError, toastSuccess } from "../../config/func";
 import { storage } from "../../config/storage";
+import { useUser } from "../../context/UserContext";
+import { ProfileScreenMethod } from "../Logins/method";
+import axios from "axios";
+
+interface UserProfile {
+  id: number;
+  name: string;
+  date_of_birth: string;
+  sex: string;
+  desired_location: string;
+  job_search_status: string;
+  updated_at: string;
+  email: string;
+  introduce: string;
+  phone: string;
+  address: string;
+  position: string;
+  degree: string;
+  current_salary: string;
+  desired_salary: string;
+  professional_skills: any[];
+  work_experiences: any[];
+  learning_processes: any[];
+  languages: any[];
+  soft_skills: any[];
+  hobbies: any[];
+  desired_locations: any[];
+  attachments: any[];
+  certificates: any[];
+}
 
 export default function ProfileScreen() {
-  const { user, loading, setUser } = useUser();
-  const [profile, setProfile] = useState<any | null>(null);
-  const [dashboard, setDashboard] = useState<any | null>(null);
-  const [attachments, setAttachments] = useState<any[]>([]);
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [profile, setProfile] = useState<UserProfile | null>(null); 
+  const [loading, setLoading] = useState(true);
+  const {user, setUser} = useUser();
 
-  if (loading) return <Loading />;
-  if (!user) return <ProfileScreenMethod />;
+  const logout = async () => {
+    try {
+      const res = await axiosClient.post("/logout");
+      await storage.delete("token");
+      setUser(null);
+    } catch (error) {
+      showError(error);
+    }
+  };
+
 
   useEffect(() => {
-    if (!user) return;
-    const fetchData = async () => {
+    if (!user) {
+      return;
+    }
+    const fetchProfile = async () => {
       try {
-        const res = await axiosClient.get("/me");
+        const res = await axiosClient.get(`user`);
         setProfile(res.data);
-
-        // gọi thêm API dashboard (ví dụ /dashboard)
-        // const dash = await axiosClient.get("/dashboard");
-        // setDashboard(dash.data);
-
-        // file upload
-        // const attach = await axiosClient.get("/attachments");
-        // setAttachments(attach.data);
-
-        // job phù hợp
-        // const jobsRes = await axiosClient.get("/jobs/suitable");
-        // setJobs(jobsRes.data);
-
-      } catch (err) {
-        await storage.delete("token");
-        setUser(null);
+      } catch (error) {
+        console.error("Lỗi tải profile:", error);
+        showError(error);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchData();
+
+    fetchProfile();
   }, [user]);
 
-  if (!profile) return <Loading />;
+  if(!user){
+    return <ProfileScreenMethod/>;
+  }
+
+  if (loading) {
+    return <ActivityIndicator style={{ flex: 1 }} size="large" />;
+  }
+
+  if (!profile) {
+    return <Text style={{ flex: 1, textAlign: "center" }}>Không có dữ liệu</Text>;
+  }
+
+  // Chuyển object thành mảng hiển thị
+  const fields = [
+    { key: "name", label: "Họ và tên", value: profile.name,handle: () => {} },
+    { key: "date_of_birth", label: "Ngày sinh", value: profile.date_of_birth,handle: () => {} },
+    { key: "sex", label: "Giới tính", value: profile.sex,handle: () => {} },
+    { key: "desired_location", label: "Nơi mong muốn", value: profile.desired_location,handle: () => {} },
+    { key: "job_search_status", label: "Trạng thái tìm việc", value: profile.job_search_status,handle: () => {} },
+    { key: "email", label: "Email", value: profile.email,handle: () => {} },
+    { key: "phone", label: "Số điện thoại", value: profile.phone,handle: () => {} },
+    { key: "address", label: "Địa chỉ", value: profile.address,handle: () => {} },
+    { key: "position", label: "Vị trí", value: profile.position,handle: () => {} },
+    { key: "degree", label: "Bằng cấp", value: profile.degree,handle: () => {} },
+    { key: "current_salary", label: "Lương hiện tại", value: profile.current_salary,handle: () => {} },
+    { key: "desired_salary", label: "Lương mong muốn", value: profile.desired_salary,handle: () => {} },
+  ];
+
+  const renderItem = ({ item }: any) => (
+    <TouchableOpacity
+      style={styles.item}
+      onPress={() => {}}
+    >
+      <Text style={styles.label}>{item.label}:</Text>
+      <Text style={styles.value}>{item.value || "Chưa cập nhật"}</Text>
+    </TouchableOpacity>
+  );
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Image source={{ uri: profile.image }} style={styles.avatar} />
-        <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text style={styles.name}>{profile.name}</Text>
-          <TouchableOpacity style={styles.btn}>
-            <Text style={styles.btnText}>Cập nhật hồ sơ</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+    <View style={styles.container}>
+      <FlatList
+        data={fields}
+        keyExtractor={(item) => item.key}
+        renderItem={renderItem}
+      />
+      {/* Render thêm các phần có mảng riêng như kỹ năng, kinh nghiệm */}
+      {/* <TouchableOpacity
+        style={styles.section}
+        onPress={() => {}}
+      >
+        <Text style={styles.sectionTitle}>Kỹ năng chuyên môn ({profile.professional_skills.length})</Text>
+      </TouchableOpacity>
 
-      {/* Thông tin cá nhân */}
-      <View style={styles.card}>
-        <InfoRow label="Ngày sinh" value={profile.date_of_birth || "Chưa cập nhật"} />
-        <InfoRow label="Giới tính" value={profile.sex || "Chưa cập nhật"} />
-        <InfoRow label="Vị trí mong muốn" value={profile.desired_location || "Chưa cập nhật"} />
-        <InfoRow label="Chức vụ" value={profile.position || "Chưa cập nhật"} />
-        <InfoRow
-          label="Trạng thái tìm việc"
-          value={profile.job_search_status ? "Đang tìm việc" : "Tắt tìm việc"}
-          valueStyle={{ color: profile.job_search_status ? "green" : "red" }}
-        />
-        <InfoRow label="Ngày cập nhật" value={profile.updated_at} />
-      </View>
-
-      {/* Dashboard */}
-      {/* {dashboard && (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Dashboard</Text>
-          <View style={styles.dashboardRow}>
-            <DashItem label="Lượt xem" value={dashboard.views} />
-            <DashItem label="Tin nhắn" value={dashboard.messages} />
-            <DashItem label="Đã ứng tuyển" value={dashboard.applied_jobs} />
-            <DashItem label="Đã lưu" value={dashboard.saved_jobs} />
-          </View>
-        </View>
-      )} */}
-
-      {/* CV Upload */}
-      {/* {attachments.length > 0 && (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>CV đã tải lên</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {attachments.map((a, i) => (
-              <View key={i} style={styles.attachment}>
-                <Image source={{ uri: a.thumbnail }} style={{ width: 80, height: 80 }} />
-                <Text numberOfLines={1} style={styles.attachmentText}>
-                  {a.attachment}
-                </Text>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-      )} */}
-
-      {/* Job phù hợp */}
-      {/* {jobs.length > 0 && (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Việc làm phù hợp</Text>
-          {jobs.map((job, i) => (
-            <TouchableOpacity key={i} style={styles.jobItem}>
-              <Image source={{ uri: job.employer.image }} style={styles.jobImage} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.jobTitle}>{job.name}</Text>
-                <Text style={styles.jobCompany}>{job.employer.name}</Text>
-                <Text style={styles.jobLocation}>{job.location}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )} */}
-    </ScrollView>
+      <TouchableOpacity
+        style={styles.section}
+        onPress={() => {}}
+      >
+        <Text style={styles.sectionTitle}>Kinh nghiệm làm việc ({profile.work_experiences.length})</Text>
+      </TouchableOpacity> */}
+    </View>
   );
 }
 
-const InfoRow = ({ label, value, valueStyle = {} } : { label: string; value: string; valueStyle?: any }) => (
-  <View style={styles.row}>
-    <Text style={styles.label}>{label}:</Text>
-    <Text style={[styles.value, valueStyle]}>{value}</Text>
-  </View>
-);
-
-const DashItem = ({ label, value } : { label: string; value: number }) => (
-  <View style={{ alignItems: "center", flex: 1 }}>
-    <Text>{label}</Text>
-    <Text style={{ fontSize: 18, fontWeight: "bold" }}>{value}</Text>
-  </View>
-);
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f2f2f2", padding: 12 },
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
-  avatar: { width: 100, height: 100, borderRadius: 10 },
-  name: { fontSize: 20, fontWeight: "bold" },
-  btn: { backgroundColor: "#007bff", padding: 8, borderRadius: 5, marginTop: 8 },
-  btnText: { color: "white" },
-  card: { backgroundColor: "white", padding: 12, borderRadius: 10, marginBottom: 16 },
-  sectionTitle: { fontWeight: "bold", marginBottom: 8 },
-  row: { flexDirection: "row", marginBottom: 6 },
-  label: { width: 120, fontWeight: "bold" },
-  value: { flex: 1 },
-  dashboardRow: { flexDirection: "row", justifyContent: "space-around" },
-  attachment: { alignItems: "center", marginRight: 12 },
-  attachmentText: { maxWidth: 80, fontSize: 12 },
-  jobItem: { flexDirection: "row", padding: 8, borderBottomWidth: 1, borderColor: "#eee" },
-  jobImage: { width: 60, height: 60, marginRight: 8 },
-  jobTitle: { fontWeight: "bold", color: "red" },
-  jobCompany: { fontSize: 12, color: "gray" },
-  jobLocation: { fontSize: 12, color: "blue" },
+  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
+  item: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderColor: "#eee",
+  },
+  label: { fontWeight: "bold", fontSize: 14, marginBottom: 4 },
+  value: { fontSize: 14, color: "#333" },
+  section: {
+    marginTop: 16,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: "#f2f2f2",
+  },
+  sectionTitle: { fontWeight: "bold", fontSize: 16 },
 });

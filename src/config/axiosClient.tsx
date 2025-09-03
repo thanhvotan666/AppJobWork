@@ -2,12 +2,10 @@ import axios from "axios";
 import { baseUrlApi } from "./setup";
 import { storage } from "./storage";
 
-
-const axiosClient = axios.create({
+export const axiosClient = axios.create({
   baseURL: baseUrlApi,
-  timeout: 5000,
   headers: {
-    Accept: "application/json",
+    'Content-Type': 'application/json',
   },
 });
 
@@ -23,4 +21,14 @@ axiosClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-export default axiosClient;
+axiosClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      await storage.delete("token"); 
+      // Có thể redirect về login screen
+    }
+    return Promise.reject(error);
+  }
+);
+

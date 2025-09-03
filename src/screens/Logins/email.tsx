@@ -8,7 +8,7 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import axiosClient from "../../config/axiosClient";
+import {axiosClient} from "../../config/axiosClient";
 import { showError, toastSuccess } from "../../config/func";
 import { storage } from "../../config/storage";
 import { useUser } from "../../context/UserContext";
@@ -39,15 +39,12 @@ export default function LoginWithEmailScreen({ clickMethod }: any) {
       await storage.set("token", res.data.token);
 
       // 3. Gọi API /me để lấy user
-      const me = await axios.get(`${axiosClient.defaults.baseURL}/me`, {
-        headers: { Authorization: `Bearer ${res.data.token}` },
-      });
+      const me = await axiosClient.get("me");
 
-      // 4. Lưu user vào Context
+      // // 4. Lưu user vào Context
       setUser(me.data);
-
-      // // 5. Hiển thị thông báo
-      toastSuccess("Đăng nhập thành công");
+      console.log(me.data);
+      
 
     } catch (err: any) {
       console.log(err);

@@ -12,8 +12,8 @@ export default function MenuScreen() {
 
       {/* Các mục chính */}
       <View style={styles.section}>
-        <TouchableOpacity style={styles.card}>
-          <Text style={styles.cardText} onPress={() => navigation.navigate('Việc đã ứng tuyển')}>Việc đã ứng tuyển</Text>
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Việc đã ứng tuyển')}>
+          <Text style={styles.cardText}>Việc đã ứng tuyển</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.card}>
           <Text style={styles.cardText}>Việc đã lưu lại</Text>

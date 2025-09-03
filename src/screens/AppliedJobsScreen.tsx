@@ -12,11 +12,11 @@ import Icon from '@react-native-vector-icons/ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { showError, showSalary } from '../config/func';
 import {useEffect, useState} from 'react';
-import axiosClient from '../config/axiosClient';
+import {axiosClient} from '../config/axiosClient';
 
 export const AppliedJobsScreen = () => {
   const navigation = useNavigation<NavigationMainTabsProp>();
-  const [applied, setApplied] = useState<any[]>([]);
+  const [applieds, setApplieds] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -25,23 +25,25 @@ export const AppliedJobsScreen = () => {
     const fetchAppliedJobs = async () => {
       setIsLoading(true);
       try {
-        const response = await axiosClient.get('applied-jobs', {
-          params: { page },
-        });
-        const data = response.data;
-        setApplied(data);
+        const res = await axiosClient.get('applied-jobs', {params: { page: page }});
+        const data = res.data;
+
         if (data.length === 0) {
+          setApplieds([]);
           setHasMore(false);
         } else {
+          setApplieds(data);
           setHasMore(true);
         }
       } catch (error) {
         showError(error);
-        setApplied([]);
+        console.log(error);
+        setApplieds([]);
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchAppliedJobs();
   }, [page]);
 
@@ -59,15 +61,6 @@ export const AppliedJobsScreen = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-      <View style={styles.headerContainer}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Icon name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Việc làm đã ứng tuyển</Text>
-      </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Thanh tìm kiếm */}
         <View>
@@ -79,20 +72,20 @@ export const AppliedJobsScreen = () => {
             <Text style={styles.searchText}>Tìm việc làm...</Text>
           </TouchableOpacity>
         </View>
-
         {/* Tiêu đề trang */}
         <Text style={styles.header}></Text>
 
         {isLoading ? (
           <ActivityIndicator size="large" color="#007bff" />
-        ) : applied.length > 0 ? (
-          applied.map(job => (
+        ) : applieds.length > 0 ? (
+          applieds.map(applied => (
             <TouchableOpacity
-              key={job.id}
+              key={applied.id}
               style={styles.jobCard}
-              onPress={() => navigation.navigate('Công việc', {id: job.id})}>
-              <Text style={styles.jobTitle}>{job.name}</Text>
-              <Text style={styles.jobDetail}>💰 {showSalary(job)}</Text>
+              onPress={() => navigation.navigate('Công việc', {id: applied.job.id})}>
+              <Text style={styles.jobTitle}>{applied.job.name} ({applied.status})</Text>
+              <Text style={styles.jobDetail}>{applied.job.employer.name}</Text>
+              <Text style={styles.jobDetail}>💰 {showSalary(applied.job)}</Text>
             </TouchableOpacity>
           ))
         ) : (

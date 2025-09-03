@@ -1,14 +1,3 @@
-// import React from 'react';
-// import { View, Text, StyleSheet } from 'react-native';
-// import HomeScreenIndex from '../../components/HomeScreens';
-// import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-// import { useNavigation } from '@react-navigation/native';
-
-// export default function HomeScreen() {
-//   const navigation = useNavigation();
-//   return <HomeScreenIndex/>;
-// }
-
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -26,25 +15,22 @@ import {
 } from '@react-navigation/native-stack';
 import { Loading } from '../../components/loading';
 import { NavigationMainTabsProp } from '../../config/setup';
-import axiosClient from '../../config/axiosClient';
+import {axiosClient} from '../../config/axiosClient';
 import { showError, showSalary } from '../../config/func';
 
 export default function HomeScreen() {
   const navigation = useNavigation<NavigationMainTabsProp>();
   const [loading, setLoading] = useState(true);
-  const [newJobs, setNewJobs] = useState([]);
-  const [recommendedJobs, setRecommendedJobs] = useState([]);
+  const [newJobs, setNewJobs] = useState<any[]>([]);
+  const [recommendedJobs, setRecommendedJobs] = useState<any[]>([]);
 
   useEffect(() => {
-    fetchNewJobs();
-    fetchRecommendedJobs();
-  }, []);
-
-  const fetchNewJobs = async () => {
+    const fetchNewJobs = async () => {
     try {
       const response = await axiosClient.get('/jobs');
       const data = response.data;
       setNewJobs(data);
+      
       setLoading(false);
     } catch (error) {
       showError(error);
@@ -56,40 +42,43 @@ export default function HomeScreen() {
       const response = await axiosClient.get('/jobs');
       const data = response.data;
       setRecommendedJobs(data);
+    
       setLoading(false);
     } catch (error) {
       showError(error);
     }
   };
+    fetchNewJobs();
+    // fetchRecommendedJobs();
+  }, []);
 
   if (loading) return <Loading/>
-
+  
   const SectionNewJobs = (data: any) => {
     return (
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Việc làm mới nhất</Text>
         {data.length > 0 &&
-          data.forEach((job: any) => {
-            ViewNewJob(job);
+          data.map((job: any, index: number) => {
+            return (<View key={job.id}>
+              <TouchableOpacity
+                style={styles.jobCard}
+                onPress={() => navigation.navigate('Công việc', { id: job.id })}
+              >
+                <Text style={styles.jobTitle}>{job.name}</Text>
+                <Text style={styles.jobEmployer}>
+                   {job.employer.name} 
+                </Text>
+                <Text style={styles.jobDetail}>
+                  💰 {showSalary(job)} 
+                </Text>
+              </TouchableOpacity>
+              </View>)
           })}
       </View>
     );
   };
 
-  const ViewNewJob = (job: any) => {
-    return (
-      <TouchableOpacity
-        id={job.id}
-        style={styles.jobCard}
-        onPress={() => navigation.navigate('Công việc', { id: job.id })}
-      >
-        <Text style={styles.jobTitle}>{job.name}</Text>
-        <Text style={styles.jobDetail}>
-          💰 {showSalary(job)} 
-        </Text>
-      </TouchableOpacity>
-    );
-  };
 
   const SectionRecommendedJobs = (data: any) => {
     return(
@@ -186,7 +175,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   jobCard: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#ffffffff',
     padding: 12,
     borderRadius: 8,
     marginBottom: 10,
@@ -200,6 +189,11 @@ const styles = StyleSheet.create({
   },
   jobDetail: {
     fontSize: 14,
+    color: '#555',
+  },
+  jobEmployer: {
+    fontSize: 14,
+    fontWeight: 'bold',
     color: '#555',
   },
 });

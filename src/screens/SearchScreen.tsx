@@ -1,6 +1,6 @@
 // SearchResultsScreen.tsx
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,63 +10,65 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
+import { showError } from '../config/func';
+import { axiosClient } from '../config/axiosClient';
 
-type Job = {
-  title: string;
-  company: string;
-  location: string;
-  salary: string;
-  deadline: string;
-};
-
-const jobList: Job[] = [
-  {
-    title: 'IT Supervisor',
-    company: 'Công Ty TNHH Red Bull (Việt Nam)',
-    location: 'Hồ Chí Minh',
-    salary: 'Thỏa thuận',
-    deadline: '25/07/2025',
-  },
-  {
-    title: 'Chuyên Viên IT',
-    company: 'Công ty CP Tập đoàn Hà Đô',
-    location: 'Hà Nội',
-    salary: '10 - 20 triệu',
-    deadline: '25/07/2025',
-  },
-  {
-    title: 'Estimating Engineer',
-    company: 'Công Ty TNHH Walker Design Solutions',
-    location: 'Hồ Chí Minh',
-    salary: '13 - 23 triệu',
-    deadline: '25/07/2025',
-  },
-  {
-    title: 'Chuyên Viên IT Web (NodeJS + NextJS)',
-    company: 'CÔNG TY CP HAVILAND HOUSE',
-    location: 'Đà Nẵng',
-    salary: '12 - 18 triệu',
-    deadline: '25/07/2025',
-  },
-  {
-    title: 'Software Engineer (Tiếng Nhật N2)',
-    company: 'Công Ty TNHH Kỹ Sư Công Nghệ Cao Việt',
-    location: 'Hà Nội',
-    salary: 'Tối đa 40 triệu',
-    deadline: '26/07/2025',
-  },
-];
+// const jobList: Job[] = [
+//   {
+//     title: 'IT Supervisor',
+//     company: 'Công Ty TNHH Red Bull (Việt Nam)',
+//     location: 'Hồ Chí Minh',
+//     salary: 'Thỏa thuận',
+//     deadline: '25/07/2025',
+//   },
+//   {
+//     title: 'Chuyên Viên IT',
+//     company: 'Công ty CP Tập đoàn Hà Đô',
+//     location: 'Hà Nội',
+//     salary: '10 - 20 triệu',
+//     deadline: '25/07/2025',
+//   },
+//   {
+//     title: 'Estimating Engineer',
+//     company: 'Công Ty TNHH Walker Design Solutions',
+//     location: 'Hồ Chí Minh',
+//     salary: '13 - 23 triệu',
+//     deadline: '25/07/2025',
+//   },
+//   {
+//     title: 'Chuyên Viên IT Web (NodeJS + NextJS)',
+//     company: 'CÔNG TY CP HAVILAND HOUSE',
+//     location: 'Đà Nẵng',
+//     salary: '12 - 18 triệu',
+//     deadline: '25/07/2025',
+//   },
+//   {
+//     title: 'Software Engineer (Tiếng Nhật N2)',
+//     company: 'Công Ty TNHH Kỹ Sư Công Nghệ Cao Việt',
+//     location: 'Hà Nội',
+//     salary: 'Tối đa 40 triệu',
+//     deadline: '26/07/2025',
+//   },
+// ];
 
 
 
 const SearchResultsScreen = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [jobs, setJobs] = useState([]);
+const fetchJobs = async () => {
+      try {
+        const res = await axiosClient.get('/jobs',{params: {key_word: searchTerm}});
+        setJobs(res.data);
+      } catch (error) {
+        showError(error);
+      }
+    }
+  useEffect(() => {
+    fetchJobs();
+  },[searchTerm])
 
-  const filteredJobs = jobList.filter((job) =>
-    job.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const renderJobItem = ({ item }: { item: Job }) => (
+  const renderJobItem = ({ item }: any) => (
     <View style={styles.jobCard}>
       <Text style={styles.jobTitle}>{item.title}</Text>
       <Text style={styles.company}>{item.company}</Text>
@@ -88,7 +90,7 @@ const SearchResultsScreen = () => {
 
       {/* Danh sách kết quả */}
       <FlatList
-        data={filteredJobs}
+        data={jobs}
         keyExtractor={(_, index) => index.toString()}
         renderItem={renderJobItem}
         ListEmptyComponent={

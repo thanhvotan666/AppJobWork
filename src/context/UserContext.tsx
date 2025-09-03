@@ -29,7 +29,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   // Hàm gọi API /me
   const fetchUser = async () => {
     try {
-      const res = await axiosClient.get("/auth/me");
+      const res = await axiosClient.get("me");
       setUser(res.data); // Lưu dữ liệu user
     } catch (error) {
       console.log("Not logged in", error);

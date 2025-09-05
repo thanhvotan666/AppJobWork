@@ -1,20 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Uploading from '../../components/uploading';
 
 export default function UtilityScreen() {
-  return <View style={styles.container}>
-    <Text style={styles.text}>Đang cập nhập</Text>
-  </View>
+  return <Uploading/>;
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
+
 });

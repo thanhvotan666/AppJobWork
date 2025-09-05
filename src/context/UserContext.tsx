@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import axiosClient from "../config/axiosClient";
+import {axiosClient} from "../config/axiosClient";
 
 type User = {
   id: number;

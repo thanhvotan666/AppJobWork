@@ -2,14 +2,13 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import axios from "axios";
 import { axiosClient } from "../../config/axiosClient";
-import { toastSuccess } from "../../config/func";
+import { showError, toastSuccess } from "../../config/func";
 
 const EditNameScreen = ({ navigation }: any) => {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Lấy thông tin user hiện tại
     const fetchUser = async () => {
       try {
         const res = await axiosClient.get("/user");
@@ -18,7 +17,6 @@ const EditNameScreen = ({ navigation }: any) => {
         console.error(err);
       }
     };
-
     fetchUser();
   }, []);
 
@@ -30,12 +28,14 @@ const EditNameScreen = ({ navigation }: any) => {
 
     try {
       setLoading(true);
-      const res = await axiosClient.put("/user", { new_name: name });
+      const res = await axiosClient.put(`/user/0`,{new_name: name});
 
-      toastSuccess("Cập nhật tên thành công");
+      toastSuccess(res.data.message);
       navigation.goBack();
     } catch (err) {
-      Alert.alert("Lỗi", "Không thể cập nhật tên");
+      showError(err);
+      console.log(err);
+      
     } finally {
       setLoading(false);
     }

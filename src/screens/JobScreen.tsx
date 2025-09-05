@@ -27,7 +27,6 @@ const JobScreen: React.FC = () => {
         const response = await axiosClient.get(`jobs/${id}`);
         const data = response.data;
         setJob(data);
-        console.log(data);
         setLoading(false);
       } catch (error) {
         showError(error);
@@ -53,34 +52,34 @@ const JobScreen: React.FC = () => {
     if (job.is_applied) {
       return;
     }
+    setLoading(true);
     try {
       const res = await axiosClient.post(`applied-jobs`,{job_id:id});
-      console.log(res.data);
-      toastSuccess('Ứng tuyển thành công');
       setJob({ ...job, is_applied: true });
     } catch (error) {
         showError(error);
     }
+    setLoading(false);
   };
   const handleSave = async () => {
+    setLoading(true);
     try {
       const res = await axiosClient.post(`saved-jobs`,{job_id:id});
-      toastSuccess("Lưu thành công");
       setJob({ ...job, is_saved: true });
     } catch (error) {
       showError(error);
-
     }
+    setLoading(false);
   }
     const handleUnSave = async () => {
+      setLoading(true);
     try {
       const res = await axiosClient.delete(`saved-jobs/${job.id}`);
-      toastSuccess("Hủy lưu thành công");
       setJob({ ...job, is_saved: false });
     } catch (error) {
       showError(error);
-
     }
+    setLoading(false);
   }
 
   if (loading) {
@@ -145,7 +144,7 @@ const JobScreen: React.FC = () => {
         relatedJobs.length > 0 &&
         relatedJobs.map((job, index) => (
           <View key={index} style={styles.relatedJob}>
-            <Text style={styles.relatedTitle}>• {job.name}</Text>
+            <Text style={styles.relatedTitle}>{job.name}</Text>
             <Text style={styles.relatedSalary}>{showSalary(job)}</Text>
           </View>
         ))}
@@ -209,6 +208,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 4,
     alignItems: 'center',
+    backgroundColor: '#ffffffff',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#00e5ffff',
   },
   relatedTitle: {
     fontSize: 14,

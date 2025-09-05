@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import {axiosClient} from "../../config/axiosClient";
-import { showError, toastSuccess } from "../../config/func";
+import React, { useCallback, useEffect, useState } from "react";
+import { Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, View } from "react-native";
+import { axiosClient } from "../../config/axiosClient";
+import { showError } from "../../config/func";
 import { storage } from "../../config/storage";
 import { useUser } from "../../context/UserContext";
 import { ProfileScreenMethod } from "../Logins/method";
-import axios from "axios";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { NavigationMainTabsProp } from "../../config/setup";
 
 interface UserProfile {
   id: number;
@@ -36,13 +36,14 @@ interface UserProfile {
 }
 
 export default function ProfileScreen() {
-  const [profile, setProfile] = useState<UserProfile | null>(null); 
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const {user, setUser} = useUser();
+  const { user, setUser } = useUser();
+  const navigation = useNavigation<NavigationMainTabsProp>();
 
   const logout = async () => {
     try {
-      const res = await axiosClient.post("/logout");
+      await axiosClient.post("/logout");
       await storage.delete("token");
       setUser(null);
     } catch (error) {
@@ -50,12 +51,12 @@ export default function ProfileScreen() {
     }
   };
 
+  const changePassword = () => {
+    navigation.navigate("Đổi mật khẩu");
+  };
 
-  useEffect(() => {
-    if (!user) {
-      return;
-    }
-    const fetchProfile = async () => {
+
+  const fetchProfile = async () => {
       try {
         const res = await axiosClient.get(`user`);
         setProfile(res.data);
@@ -65,13 +66,21 @@ export default function ProfileScreen() {
       } finally {
         setLoading(false);
       }
-    };
+  };
 
+  useEffect(() => {
+    if (!user) return;
     fetchProfile();
   }, [user]);
 
-  if(!user){
-    return <ProfileScreenMethod/>;
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfile();
+    }, [])
+  );
+
+  if (!user) {
+    return <ProfileScreenMethod />;
   }
 
   if (loading) {
@@ -82,54 +91,87 @@ export default function ProfileScreen() {
     return <Text style={{ flex: 1, textAlign: "center" }}>Không có dữ liệu</Text>;
   }
 
-  // Chuyển object thành mảng hiển thị
   const fields = [
-    { key: "name", label: "Họ và tên", value: profile.name,handle: () => {} },
-    { key: "date_of_birth", label: "Ngày sinh", value: profile.date_of_birth,handle: () => {} },
-    { key: "sex", label: "Giới tính", value: profile.sex,handle: () => {} },
-    { key: "desired_location", label: "Nơi mong muốn", value: profile.desired_location,handle: () => {} },
-    { key: "job_search_status", label: "Trạng thái tìm việc", value: profile.job_search_status,handle: () => {} },
-    { key: "email", label: "Email", value: profile.email,handle: () => {} },
-    { key: "phone", label: "Số điện thoại", value: profile.phone,handle: () => {} },
-    { key: "address", label: "Địa chỉ", value: profile.address,handle: () => {} },
-    { key: "position", label: "Vị trí", value: profile.position,handle: () => {} },
-    { key: "degree", label: "Bằng cấp", value: profile.degree,handle: () => {} },
-    { key: "current_salary", label: "Lương hiện tại", value: profile.current_salary,handle: () => {} },
-    { key: "desired_salary", label: "Lương mong muốn", value: profile.desired_salary,handle: () => {} },
+    { key: "name", label: "Họ và tên", value: profile.name, handle: () => navigation.navigate("Cập nhập tên") },
+    { key: "date_of_birth", label: "Ngày sinh", value: profile.date_of_birth, handle: () => navigation.navigate("Cập nhập ngày sinh") },
+    { key: "sex", label: "Giới tính", value: profile.sex == "male" ? "Nam" : "Nữ", handle: () => navigation.navigate("Cập nhập giới tính") },
+    { key: "desired_location", label: "Nơi mong muốn", value: profile.desired_location, handle: () => navigation.navigate("Cập nhập nơi mong muốn") },
+    { key: "job_search_status", label: "Trạng thái tìm việc", value: profile.job_search_status ? "Đang tìm việc" : "Không tìm việc", handle: () => navigation.navigate("Cập nhập trạng thái tìm việc") },
+    { key: "email", label: "Email", value: profile.email, handle: () => {} },
+    { key: "phone", label: "Số điện thoại", value: profile.phone, handle: () => navigation.navigate("Cập nhập số điện thoại") },
+    { key: "address", label: "Địa chỉ", value: profile.address, handle: () => navigation.navigate("Cập nhập địa chỉ") },
+    { key: "position", label: "Vị trí", value: profile.position, handle: () => navigation.navigate("Cập nhập vị trí") },
+    { key: "degree", label: "Bằng cấp", value: profile.degree, handle: () => navigation.navigate("Cập nhập trình độ học vấn") },
+    { key: "current_salary", label: "Lương hiện tại", value: profile.current_salary, handle: () => navigation.navigate("Cập nhập lương hiện tại") },
+    { key: "desired_salary", label: "Lương mong muốn", value: profile.desired_salary, handle: () => navigation.navigate("Cập nhập lương mong muốn") },
   ];
 
-  const renderItem = ({ item }: any) => (
-    <TouchableOpacity
-      style={styles.item}
-      onPress={() => {}}
-    >
-      <Text style={styles.label}>{item.label}:</Text>
-      <Text style={styles.value}>{item.value || "Chưa cập nhật"}</Text>
-    </TouchableOpacity>
-  );
-
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={fields}
-        keyExtractor={(item) => item.key}
-        renderItem={renderItem}
-      />
-      {/* Render thêm các phần có mảng riêng như kỹ năng, kinh nghiệm */}
-      {/* <TouchableOpacity
-        style={styles.section}
-        onPress={() => {}}
-      >
-        <Text style={styles.sectionTitle}>Kỹ năng chuyên môn ({profile.professional_skills.length})</Text>
+    <ScrollView style={styles.container}>
+      {fields.map((item) => (
+        <TouchableOpacity key={item.key} style={styles.item} onPress={item.handle}>
+          <Text style={styles.label}>{item.label}:</Text>
+          <Text style={styles.value}>{item.value || "Chưa cập nhật"}</Text>
+        </TouchableOpacity>
+      ))}
+
+      <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("Cập nhập giới thiệu bản thân")}>
+          <Text style={styles.label}>Giới thiệu bản thân:</Text>
+          <Text style={styles.value}>{profile.introduce || "Chưa cập nhật"}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.section}
-        onPress={() => {}}
-      >
-        <Text style={styles.sectionTitle}>Kinh nghiệm làm việc ({profile.work_experiences.length})</Text>
-      </TouchableOpacity> */}
-    </View>
+      <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("Cập nhập địa điểm mong muốn")}>
+          <Text style={styles.label}>Nơi làm việc mong muốn:</Text>
+          <Text style={styles.value}>
+            {profile.desired_locations.length > 0 ? 
+            profile.desired_locations.map( (dl)=> dl.desired_location ).join(", ")
+            : "Chưa cập nhật"}
+          </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("Cập nhập sở thích")}>
+          <Text style={styles.label}>Sở thích:</Text>
+          <Text style={styles.value}>
+            {profile.hobbies.length > 0 ? 
+            profile.hobbies.map( (item)=> item.hobby ).join(", ")
+            : "Chưa cập nhật"}
+          </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("Cập nhập trình độ ngôn ngữ")}>
+          <Text style={styles.label}>Ngoại ngữ:</Text>
+          <Text style={styles.value}>
+            {profile.languages.length > 0 ? 
+            profile.languages.map( (item)=> `${item.language}-${item.proficient}` ).join(", ")
+            : "Chưa cập nhật"}
+          </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("Cập nhập kĩ năng chuyên môn")}>
+          <Text style={styles.label}>Kỹ năng chuyên môn:</Text>
+          <Text style={styles.value}>
+            {profile.professional_skills.length > 0 ? 
+            profile.professional_skills.map( (item)=> `${item.professional_skill}-${item.year}` ).join(", ")
+            : "Chưa cập nhật"}
+          </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("Cập nhập kĩ năng mềm")}>
+          <Text style={styles.label}>Kỹ năng mềm:</Text>
+          <Text style={styles.value}>
+            {profile.soft_skills.length > 0 ? 
+            profile.soft_skills.map( (item)=> `${item.soft_skill}-${item.proficient}` ).join(", ")
+            : "Chưa cập nhật"}
+          </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.changePasswordButton} onPress={changePassword}>
+        <Text style={styles.changePasswordButtonText}>Đổi mật khẩu</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+        <Text style={styles.logoutButtonText}>Đăng xuất</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 }
 
@@ -149,4 +191,29 @@ const styles = StyleSheet.create({
     backgroundColor: "#f2f2f2",
   },
   sectionTitle: { fontWeight: "bold", fontSize: 16 },
+  logoutButton: {
+    marginTop: 32,
+    backgroundColor: "#f44336",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  logoutButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  changePasswordButton: {
+    marginTop: 32,
+    backgroundColor: "#e5ff00ff",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  changePasswordButtonText: {
+    color: "#000",
+    fontWeight: "bold",
+    fontSize: 16,
+  }
 });

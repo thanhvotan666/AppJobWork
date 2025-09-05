@@ -7,42 +7,44 @@ import {
   SafeAreaView,
   ActivityIndicator,
 } from 'react-native';
-import { NavigationMainTabsProp } from '../config/setup';
+import { NavigationMainTabsProp } from '../../config/setup';
 import Icon from '@react-native-vector-icons/ionicons';
 import { useNavigation } from '@react-navigation/native';
-import { showError, showSalary } from '../config/func';
+import { showError, showSalary } from '../../config/func';
 import {useEffect, useState} from 'react';
-import {axiosClient}from '../config/axiosClient';
+import {axiosClient} from '../../config/axiosClient';
 
-export const IntroducedJobsScreen = () => {
+export const AppliedJobsScreen = () => {
   const navigation = useNavigation<NavigationMainTabsProp>();
-  const [introducedJobs, setIntroducedJobs] = useState<any[]>([]);
+  const [applieds, setApplieds] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    const fetchIntroducedJobs = async () => {
+    const fetchAppliedJobs = async () => {
       setIsLoading(true);
       try {
-        const response = await axiosClient.get('introduced-jobs', {
-          params: { page },
-        });
-        const data = response.data;
-        setIntroducedJobs(data);
+        const res = await axiosClient.get('applied-jobs', {params: { page: page }});
+        const data = res.data;
+
         if (data.length === 0) {
+          setApplieds([]);
           setHasMore(false);
         } else {
+          setApplieds(data);
           setHasMore(true);
         }
       } catch (error) {
-        showError(error); // Assuming showError is defined elsewhere
-        setIntroducedJobs([]);
+        showError(error);
+        console.log(error);
+        setApplieds([]);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchIntroducedJobs();
+
+    fetchAppliedJobs();
   }, [page]);
 
   const handlePrevPage = () => {
@@ -56,18 +58,9 @@ export const IntroducedJobsScreen = () => {
       setPage(prevPage => prevPage + 1);
     }
   };
-
+  
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-      <View style={styles.headerContainer}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Icon name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Việc làm được giới thiệu</Text>
-      </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Thanh tìm kiếm */}
         <View>
@@ -79,26 +72,26 @@ export const IntroducedJobsScreen = () => {
             <Text style={styles.searchText}>Tìm việc làm...</Text>
           </TouchableOpacity>
         </View>
-
         {/* Tiêu đề trang */}
         <Text style={styles.header}></Text>
 
         {isLoading ? (
           <ActivityIndicator size="large" color="#007bff" />
-        ) : introducedJobs.length > 0 ? (
-          introducedJobs.map(job => (
+        ) : applieds.length > 0 ? (
+          applieds.map(applied => (
             <TouchableOpacity
-              key={job.id}
+              key={`applied-${applied.id}`}
               style={styles.jobCard}
-              onPress={() => navigation.navigate('Công việc', {id: job.id})}>
-              <Text style={styles.jobTitle}>{job.name}</Text>
-              <Text style={styles.jobDetail}>{job.employer.name}</Text>
-              <Text style={styles.jobDetail}>💰 {showSalary(job)}</Text>
+              onPress={() => navigation.navigate('Công việc', {id: applied.job.id})}>
+              <Text style={styles.jobTitle}>{applied.job.name} ({applied.status})</Text>
+              <Text style={styles.jobDetail}>{applied.job.employer.name}</Text>
+              <Text style={styles.jobDetail}>📍 {applied.job.location}</Text>
+              <Text style={styles.jobDetail}>💰 {showSalary(applied.job)}</Text>
             </TouchableOpacity>
           ))
         ) : (
           <Text style={styles.noJobsText}>
-            Không có việc làm nào để hiển thị.
+            Không có việc làm nào để hiển thị
           </Text>
         )}
       </ScrollView>

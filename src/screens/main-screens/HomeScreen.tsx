@@ -22,7 +22,7 @@ export default function HomeScreen() {
   const navigation = useNavigation<NavigationMainTabsProp>();
   const [loading, setLoading] = useState(true);
   const [newJobs, setNewJobs] = useState<any[]>([]);
-  const [recommendedJobs, setRecommendedJobs] = useState<any[]>([]);
+  const [recommendedJobs, setRecommendedJobs] = useState<any|null>(null);
 
   useEffect(() => {
     const fetchNewJobs = async () => {
@@ -39,7 +39,7 @@ export default function HomeScreen() {
 
   const fetchRecommendedJobs = async () => {
     try {
-      const response = await axiosClient.get('/jobs');
+      const response = await axiosClient.get('/jobs',{params:{recommended: true}});
       const data = response.data;
       setRecommendedJobs(data);
     
@@ -49,12 +49,15 @@ export default function HomeScreen() {
     }
   };
     fetchNewJobs();
-    // fetchRecommendedJobs();
+    fetchRecommendedJobs();
   }, []);
 
   if (loading) return <Loading/>
   
   const SectionNewJobs = (data: any) => {
+    if (!data) {
+      return <Loading/>
+    }
     return (
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Việc làm mới nhất</Text>
@@ -81,6 +84,9 @@ export default function HomeScreen() {
 
 
   const SectionRecommendedJobs = (data: any) => {
+    if (!data) {
+      return <Loading/>
+    }
     return(
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Việc làm đề xuất</Text>
@@ -89,25 +95,15 @@ export default function HomeScreen() {
           onPress={() => navigation.navigate('Công việc', { id: data.id })}
         >
           <Text style={styles.jobTitle}>{data.name}</Text>
+          <Text style={styles.jobEmployer}>{data.employer.name}</Text>
           
           <Text style={styles.jobDetail}>
             {data.professions > 0 &&
-            data.professions.map((job_profession: any, index: number) => {
-              if (index === 0) {
-                return job_profession.profession.name;
-              } else {
-                return `, ${job_profession.profession.name}`;
-              }
-            })}
+            data.professions.map((jp:any)=>jp.profession.name).join(', ')}
           </Text>
           <Text style={styles.jobDetail}>
           {data.skills > 0 &&
-          data.skills.map((skill: any, index: number) => {
-            if (index === 0) {
-              return skill.name;
-            } else {
-              return `, ${skill.name}`;
-          }})}
+          data.skills.map((skill: any) => skill.name).join(', ')}
           </Text>
           <Text style={styles.jobDetail}>📍 {data.address}</Text>
           <Text style={styles.jobDetail}>💰 Lương: {showSalary(data)}</Text>
@@ -154,6 +150,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 8,
     padding: 10,
+    marginTop: 16,
     marginBottom: 16,
   },
   searchText: {

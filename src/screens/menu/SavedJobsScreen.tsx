@@ -7,44 +7,44 @@ import {
   SafeAreaView,
   ActivityIndicator,
 } from 'react-native';
-import { NavigationMainTabsProp } from '../config/setup';
+import { NavigationMainTabsProp } from '../../config/setup';
 import Icon from '@react-native-vector-icons/ionicons';
 import { useNavigation } from '@react-navigation/native';
-import { showError, showSalary } from '../config/func';
+import { showError, showSalary } from '../../config/func';
 import {useEffect, useState} from 'react';
-import {axiosClient} from '../config/axiosClient';
+import {axiosClient} from '../../config/axiosClient';
 
-export const AppliedJobsScreen = () => {
+export const SavedJobsScreen = () => {
   const navigation = useNavigation<NavigationMainTabsProp>();
-  const [applieds, setApplieds] = useState<any[]>([]);
+  const [saveds, setSaveds] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    const fetchAppliedJobs = async () => {
+    const fetchSavedJobs = async () => {
       setIsLoading(true);
       try {
-        const res = await axiosClient.get('applied-jobs', {params: { page: page }});
+        const res = await axiosClient.get('saved-jobs', {params: { page: page }});
         const data = res.data;
-
+        console.log(data);
+        
         if (data.length === 0) {
-          setApplieds([]);
+          setSaveds([]);
           setHasMore(false);
         } else {
-          setApplieds(data);
+          setSaveds(data);
           setHasMore(true);
         }
       } catch (error) {
         showError(error);
         console.log(error);
-        setApplieds([]);
+        setSaveds([]);
       } finally {
         setIsLoading(false);
       }
     };
-
-    fetchAppliedJobs();
+    fetchSavedJobs();
   }, [page]);
 
   const handlePrevPage = () => {
@@ -77,15 +77,15 @@ export const AppliedJobsScreen = () => {
 
         {isLoading ? (
           <ActivityIndicator size="large" color="#007bff" />
-        ) : applieds.length > 0 ? (
-          applieds.map(applied => (
+        ) : saveds.length > 0 ? (
+          saveds.map(saved => (
             <TouchableOpacity
-              key={applied.id}
+              key={saved.id}
               style={styles.jobCard}
-              onPress={() => navigation.navigate('Công việc', {id: applied.job.id})}>
-              <Text style={styles.jobTitle}>{applied.job.name} ({applied.status})</Text>
-              <Text style={styles.jobDetail}>{applied.job.employer.name}</Text>
-              <Text style={styles.jobDetail}>💰 {showSalary(applied.job)}</Text>
+              onPress={() => navigation.navigate('Công việc', {id: saved.job.id})}>
+              <Text style={styles.jobTitle}>{saved.job.name}</Text>
+              <Text style={styles.jobDetail}>{saved.job.employer.name}</Text>
+              <Text style={styles.jobDetail}>💰 {showSalary(saved.job)}</Text>
             </TouchableOpacity>
           ))
         ) : (

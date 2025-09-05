@@ -7,44 +7,42 @@ import {
   SafeAreaView,
   ActivityIndicator,
 } from 'react-native';
-import { NavigationMainTabsProp } from '../config/setup';
+import { NavigationMainTabsProp } from '../../config/setup';
 import Icon from '@react-native-vector-icons/ionicons';
 import { useNavigation } from '@react-navigation/native';
-import { showError, showSalary } from '../config/func';
+import { showError, showSalary } from '../../config/func';
 import {useEffect, useState} from 'react';
-import {axiosClient} from '../config/axiosClient';
+import {axiosClient}from '../../config/axiosClient';
 
-export const SavedJobsScreen = () => {
+export const IntroducedJobsScreen = () => {
   const navigation = useNavigation<NavigationMainTabsProp>();
-  const [saveds, setSaveds] = useState<any[]>([]);
+  const [introducedJobs, setIntroducedJobs] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    const fetchSavedJobs = async () => {
+    const fetchIntroducedJobs = async () => {
       setIsLoading(true);
       try {
-        const res = await axiosClient.get('saved-jobs', {params: { page: page }});
-        const data = res.data;
-
+        const response = await axiosClient.get('introduced-jobs', {
+          params: { page },
+        });
+        const data = response.data;
+        setIntroducedJobs(data);
         if (data.length === 0) {
-          setSaveds([]);
           setHasMore(false);
         } else {
-          setSaveds(data);
           setHasMore(true);
         }
       } catch (error) {
-        showError(error);
-        console.log(error);
-        setSaveds([]);
+        showError(error); // Assuming showError is defined elsewhere
+        setIntroducedJobs([]);
       } finally {
         setIsLoading(false);
       }
     };
-
-    fetchSavedJobs();
+    fetchIntroducedJobs();
   }, [page]);
 
   const handlePrevPage = () => {
@@ -61,6 +59,7 @@ export const SavedJobsScreen = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Thanh tìm kiếm */}
         <View>
@@ -72,20 +71,21 @@ export const SavedJobsScreen = () => {
             <Text style={styles.searchText}>Tìm việc làm...</Text>
           </TouchableOpacity>
         </View>
+
         {/* Tiêu đề trang */}
         <Text style={styles.header}></Text>
 
         {isLoading ? (
           <ActivityIndicator size="large" color="#007bff" />
-        ) : saveds.length > 0 ? (
-          saveds.map(saved => (
+        ) : introducedJobs.length > 0 ? (
+          introducedJobs.map(ij => (
             <TouchableOpacity
-              key={saved.id}
+              key={ij.id}
               style={styles.jobCard}
-              onPress={() => navigation.navigate('Công việc', {id: saved.job.id})}>
-              <Text style={styles.jobTitle}>{saved.job.name}</Text>
-              <Text style={styles.jobDetail}>{saved.job.employer.name}</Text>
-              <Text style={styles.jobDetail}>💰 {showSalary(saved.job)}</Text>
+              onPress={() => navigation.navigate('Công việc', {id: ij.job.id})}>
+              <Text style={styles.jobTitle}>{ij.job.name}</Text>
+              <Text style={styles.jobDetail}>{ij.job.employer.name}</Text>
+              <Text style={styles.jobDetail}>💰 {showSalary(ij.job)}</Text>
             </TouchableOpacity>
           ))
         ) : (

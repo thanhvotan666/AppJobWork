@@ -15,13 +15,13 @@ export default function MenuScreen() {
         <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Việc đã ứng tuyển')}>
           <Text style={styles.cardText}>Việc đã ứng tuyển</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Việc đã lưu lại')}> 
           <Text style={styles.cardText}>Việc đã lưu lại</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Việc gần bạn')}>
           <Text style={styles.cardText}>Việc gần bạn</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Việc được giới thiệu')}>
           <Text style={styles.cardText}>Việc được giới thiệu</Text>
         </TouchableOpacity>
       </View></View>

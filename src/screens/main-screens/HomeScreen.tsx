@@ -26,16 +26,16 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const fetchNewJobs = async () => {
-    try {
-      const response = await axiosClient.get('/jobs');
-      const data = response.data;
-      setNewJobs(data);
-      
-      setLoading(false);
-    } catch (error) {
-      showError(error);
-    }
-  };
+      try {
+        const response = await axiosClient.get('/jobs');
+        const data = response.data;
+        setNewJobs(data);
+        
+        setLoading(false);
+      } catch (error) {
+        showError(error);
+      }
+    };
 
   const fetchRecommendedJobs = async () => {
     try {

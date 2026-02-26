@@ -59,6 +59,7 @@ export default function HomeScreen() {
       return <Loading/>
     }
     return (
+      <ScrollView>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Việc làm mới nhất</Text>
         {data.length > 0 &&
@@ -79,6 +80,7 @@ export default function HomeScreen() {
               </View>)
           })}
       </View>
+      </ScrollView>
     );
   };
 

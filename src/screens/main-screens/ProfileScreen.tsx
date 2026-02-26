@@ -123,7 +123,7 @@ export default function ProfileScreen() {
       <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("Cập nhập địa điểm mong muốn")}>
           <Text style={styles.label}>Nơi làm việc mong muốn:</Text>
           <Text style={styles.value}>
-            {profile.desired_locations.length > 0 ? 
+            {profile.desired_locations && profile.desired_locations.length > 0 ? 
             profile.desired_locations.map( (dl)=> dl.desired_location ).join(", ")
             : "Chưa cập nhật"}
           </Text>
@@ -132,7 +132,7 @@ export default function ProfileScreen() {
       <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("Cập nhập sở thích")}>
           <Text style={styles.label}>Sở thích:</Text>
           <Text style={styles.value}>
-            {profile.hobbies.length > 0 ? 
+            {profile.hobbies && profile.hobbies.length > 0 ? 
             profile.hobbies.map( (item)=> item.hobby ).join(", ")
             : "Chưa cập nhật"}
           </Text>
@@ -141,7 +141,7 @@ export default function ProfileScreen() {
       <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("Cập nhập trình độ ngôn ngữ")}>
           <Text style={styles.label}>Ngoại ngữ:</Text>
           <Text style={styles.value}>
-            {profile.languages.length > 0 ? 
+            {profile.languages && profile.languages.length > 0 ? 
             profile.languages.map( (item)=> `${item.language}-${item.proficient}` ).join(", ")
             : "Chưa cập nhật"}
           </Text>
@@ -150,7 +150,7 @@ export default function ProfileScreen() {
       <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("Cập nhập kĩ năng chuyên môn")}>
           <Text style={styles.label}>Kỹ năng chuyên môn:</Text>
           <Text style={styles.value}>
-            {profile.professional_skills.length > 0 ? 
+            {profile.professional_skills && profile.professional_skills.length > 0 ? 
             profile.professional_skills.map( (item)=> `${item.professional_skill}-${item.year}` ).join(", ")
             : "Chưa cập nhật"}
           </Text>
@@ -159,7 +159,7 @@ export default function ProfileScreen() {
       <TouchableOpacity style={styles.item} onPress={() => navigation.navigate("Cập nhập kĩ năng mềm")}>
           <Text style={styles.label}>Kỹ năng mềm:</Text>
           <Text style={styles.value}>
-            {profile.soft_skills.length > 0 ? 
+            {profile.soft_skills && profile.soft_skills.length > 0 ? 
             profile.soft_skills.map( (item)=> `${item.soft_skill}-${item.proficient}` ).join(", ")
             : "Chưa cập nhật"}
           </Text>
